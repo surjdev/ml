@@ -6,6 +6,7 @@ from matplotlib.colors import ListedColormap
 from machine_learning import KNN
 from machine_learning import LinearRegression
 from machine_learning import DecisionTree
+from machine_learning import PCA
 
 # cmap = ListedColormap(['#FF0000','#00FF00','#0000FF'])
 
@@ -93,6 +94,28 @@ from machine_learning import DecisionTree
 # predictions = nb.predict(X_test)
 # acc = accuracy(y_test, predictions)
 # print(acc)
+
+# ------------------------------------------------------------------------------------------------
+
+data = datasets.load_iris()
+X = data.data
+y = data.target
+
+pca = PCA(2)
+pca.fit(X)
+X_projected = pca.tranform(X)
+
+print("shape of X",X.shape)
+print("shape of transform X",X_projected.shape)
+
+x1 = X_projected[:, 0]
+x2 = X_projected[:, 1]
+
+plt.scatter(
+    x1,x2,c=y,edgecolors='none',alpha=0.8,cmap=plt.cm.get_cmap('viridis',3)
+)
+plt.xlabel('principal component 1')
+plt.ylabel('principal component 2')
 
 # ------------------------------------------------------------------------------------------------
 

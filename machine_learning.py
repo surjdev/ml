@@ -51,9 +51,6 @@ class LinearRegression:
             self.weights = self.weights - self.lr*dw
             self.bias = self.bias - self.lr*db
 
-
-
-
     def predict(self, X):
         y_pred = np.dot(X, self.weights) + self.bias
         return y_pred
@@ -247,4 +244,34 @@ class NaiveBayes:
         return numerator/denominator
     
 #***********************************************************************************
+#PCA
+class PCA:
+    def __init__(self, n_components):
+        self.n_components = n_components
+        self.components = None
+        self.mean = None
 
+    def fit(self, X):
+        # mean centering
+        self.mean = np.mean(X, axis=0)
+        X = X - self.mean
+
+        cov = np.cov(X.T)
+
+        #eigenvector and eigen value
+        eigenvectors, eigenvalues = np.linalg.eig(cov)
+
+        # eigenvector v =[:,1] column vector, transpose this for easier calculations
+        eigenvectors = eigenvectors.T
+
+        #sort eigenvectors
+        idxs = np.argsort(eigenvalues)[::-1]
+        eigenvalues = eigenvalues[idxs]
+        eigenvectors = eigenvectors[idxs]
+
+        self.components = eigenvectors[:self.n_components]
+
+    def tranform(self, X):
+        #projects data
+        X = X - self.mean
+        return np.dot(X, self.components.T)
