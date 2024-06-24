@@ -1,6 +1,6 @@
 import numpy as np
 from collections import Counter
-
+import matplotlib.pyplot as plt
 def euclidean_distance(x1, x2):
     distance = np.sqrt(np.sum((x1-x2)**2))
     return distance
@@ -275,3 +275,159 @@ class PCA:
         #projects data
         X = X - self.mean
         return np.dot(X, self.components.T)
+#***********************************************************************************
+#Perceptron
+def unit_step_func(x):
+    return np.where(x>0,1,0)
+
+class Perceptron:
+    def __init__(self, lr=0.01, n_iters=1000):
+        self.lr = lr
+        self.n_iters = n_iters
+        self.activation_func = unit_step_func
+        self.weights = None
+        self.bias = None
+    
+    def fit(self, X, y):
+        n_samples,n_features = X.shape
+
+        #init param
+        self.weights = np.zeros(n_features)
+        self.bias = 0
+
+        y_ = np.where(y>0,1,0)
+
+        #optimize learn weight
+        for _ in range(self.n_iters):
+            for idx, x_i in enumerate(X):
+                linear_output = np.dot(x_i, self.weights) + self.bias
+                y_pred = self.activation_func(linear_output)
+                
+                #Perceptron Update
+                update = self.lr*(y_[idx]-y_pred)
+                self.weights += update * x_i
+                self.bias += update
+
+    def predict(self, X):
+        linear_output = np.dot(X, self.weights) + self.bias
+        y_pred = self.activation_func(linear_output)
+        return y_pred
+#***********************************************************************************
+#SVM
+class SVM:
+
+    def __init__(self, lr = 0.001, lambda_param = 0.01, n_iters = 1000):
+        self.lr = lr
+        self.lambda_param =lambda_param
+        self.n_iters = n_iters
+        self.w = None
+        self.b = None
+    def fit(self, X,y):
+        n_samples,n_features = X.shape
+        y_ = np.where(y <= 0,-1,1)
+
+        #init weights
+        self.w = np.zeros(n_features)
+        self.b = 0
+
+        for _ in range(self.n_iters):
+            for idx, x_i in enumerate(X):
+                condition = y[idx] * (np.dot(x_i, self.w)-self.b) >= 1
+                if condition:
+                    self.w -= self.lr *(2*self.lambda_param*self.w)
+                else:
+                    self.w -= self.lr*(2*self.lambda_param*self.w-np.dot(x_i, y_[idx]))
+                    self.b -= self.lr*y_[idx]
+
+    def predict(self, X):
+        approx = np.dot(X, self.w) - self.b
+        return np.sign(approx)
+#***********************************************************************************
+#Kmeans
+def euclidean_distance(x1, x2):
+        return np.sqrt(np.sum((x1-x2)**2))
+class kmean:
+    def __init__(self, k=5, max_iters=100, plot_steps=False):
+        self.k = k
+        self.max_iters = max_iters
+        self.plot_steps = plot_steps
+
+        #list of sample indices for each cluster
+        self.clusters = [[] for _ in range(self.k)]
+
+        #the centers(mean vector) for each cluster
+        self.centroids = []
+    
+    def predict(self, X):
+        self.X = X
+        self.n_samples,self.n_features = X.shape
+
+        #init
+        random_sample_idxs = np.random.choice(self.n_samples, self.k, replace=False)
+        self.centroids = [self.X[idx] for idx in random_sample_idxs]
+
+        #optimize
+        for _ in range(self.max_iters):
+            #assign samples to closest centroids (create clusters)
+            self.clusters = self._create_clusters(self.centroids)
+
+            if self.plot_steps:
+                self.plot()
+
+            centroids_old = self.centroids
+            self.centroids = self._get_centroids(self.clusters)
+
+            if self._is_converged(centroids_old, self.centroids):
+                break
+
+            if self.plot_steps:
+                self.plot()
+        
+        return self._get_cluster_labels(self.clusters)
+    
+    def _get_cluster_labels(self, clusters):
+        #each samples will get the label of the cluster it was assigned to
+        labels = np.empty(self.n_samples)
+        for cluster_idx, cluster in enumerate(cluster):
+            for sample_idx in cluster:
+                labels[sample_idx] = cluster_idx
+        
+        return labels
+
+    def _create_clusters(self, centroids):
+        clusters = [[] for _ in range(self.k)]
+        for idx, sample in enumerate(self.X):
+            centroid_idx = self._closest_centroid(sample, centroids)
+            clusters[centroid_idx].append(idx)
+        return clusters
+    
+    def _closest_centroid(self, sample, centroids):
+        # distrance of the current sample to each centroid
+        distrances = [euclidean_distance(sample, point) for point in centroids]
+        closest_idx = np.argmin(distrances)
+        return closest_idx
+
+    def _get_centroids(self, clusters):
+        #assign mean value of clusters to centroids
+        centroids = np.zeros(self.k, self.n_features)
+        for cluster_idx, cluster in enumerate(clusters):
+            cluster_mean = np.mean(self.X[cluster], axis=0)
+            centroids[cluster_idx] = cluster_mean
+        return centroids
+
+    def _is_converged(self, centroids_old, centroids):
+        distances= [euclidean_distance(centroids_old[i], centroids[i]) for i in range(self.k)]
+        return sum(distances) == 0
+
+    def plot(self):
+        fig, ax = plt.subplots(figsize=(12, 8))
+
+        for i, index in enumerate(self.clusters):
+            point = self.X[index].T
+            ax.scatter(*point)
+
+        for point in self.centroids:
+            ax.scatter(*point, marker="x", color="black", linewidth=2)
+
+        plt.show()
+
