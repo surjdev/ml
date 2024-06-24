@@ -75,21 +75,24 @@ from machine_learning import DecisionTree
 # print(acc)
 
 # ------------------------------------------------------------------------------------------------
-from machine_learning import NaiveBayes
-# NaiveBayes
-def accuracy(y_test, y_pred):
-    return np.sum(y_test == y_pred) / len(y_test)
 
-X, y = datasets.make_classification(
-    n_samples=1000, n_features=10, n_classes=2, random_state=123
-)
+# from machine_learning import NaiveBayes
+# # NaiveBayes
+# def accuracy(y_test, y_pred):
+#     return np.sum(y_test == y_pred) / len(y_test)
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2 ,random_state=123)
+# X, y = datasets.make_classification(
+#     n_samples=1000, n_features=10, n_classes=2, random_state=123
+# )
 
-nb = NaiveBayes()
-nb.fit(X_train, y_train)
-predictions = nb.predict(X_test)
-acc = accuracy(y_test, predictions)
-print(acc)
+# X_train, X_test, y_train, y_test = train_test_split(
+#     X, y, test_size=0.2 ,random_state=123)
+
+# nb = NaiveBayes()
+# nb.fit(X_train, y_train)
+# predictions = nb.predict(X_test)
+# acc = accuracy(y_test, predictions)
+# print(acc)
+
+# ------------------------------------------------------------------------------------------------
 
